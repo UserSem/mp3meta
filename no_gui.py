@@ -43,9 +43,9 @@ else:
     print("Setting selected tags...")
     for tag in new_tags.keys():
         if new_tags[tag]:
-            print(f"Setting {tag}...", end=' ')
-            file.tags[tag] = new_tags[tag]
+            file.set_tag(tag, new_tags[tag])
+            #file.tags[tag] = new_tags[tag]
             print("Set.")
     print("Saving...", end=' ')
     file.tags.save()
-    print("Saved. \nExiting")
+    print("Saved. \nExiting...")

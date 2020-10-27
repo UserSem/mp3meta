@@ -14,8 +14,12 @@ AVAILABLE_TAGS = [
     'date'
 ]
 
+EMPTY_TAG_OUTPUT = "<UNDEFINED>"  #  Output if tag is empty
+EMPTY_TAG_INPUT = "None"  #  Pass this value to clear tag
 
 def get_abbrev(s):
+    # "title" --> "ti"
+    # "disc number" --> "dn"
     if len(s.split(' ')) == 1:
         return s[:2]
     else:
@@ -53,11 +57,22 @@ class Mp3File:
         self.tags = EasyID3(normal_path)
 
     def get_tags(self):
+        # Returns dict with all AVALIABLE_TAGS
         result = dict()
         for tag in AVAILABLE_TAGS:
             tag = tag.replace(' ', '')
             result[tag] = ''.join(self.tags[tag]) if tag in self.tags.keys() else None
         return result
+
+    def set_tag(self, tag, new_val):
+        tag_formatted = tag.replace(' ', '')
+        if new_val == EMPTY_TAG_INPUT:
+            print(f"Clearing {tag}...")
+            self.tags[tag_formatted] = ""
+        else:
+            print(f"Setting {tag} to {new_val}...")
+            self.tags[tag_formatted] = new_val
+        f.tags.save()
 
     def print_info(self):
         print()
@@ -65,10 +80,15 @@ class Mp3File:
         for tag in tags.keys():
             print("{} {}".format(
                 tag.upper().ljust(15, ' '),
-                tags[tag] if tags[tag] else "<UNDEFINED>"
+                tags[tag] if tags[tag] else EMPTY_TAG_OUTPUT
             ))
 
 
 if __name__ == '__main__':
-    f = Mp3File(normalize_path('song.mp3'))
-    print(f.get_tags())
+    TEST_FOLDER = r"C:\Users\users_x2jxvc2\Desktop\test"
+    for p in get_all_paths_to_mp3_in_dir(TEST_FOLDER):
+        f = Mp3File(p)
+        print(f.get_tags())
+        f.set_tag("album artist", "Qwe")
+        f.set_tag("album", "ALBUM")
+        f.tags.save()
