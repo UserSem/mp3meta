@@ -1,4 +1,4 @@
-from mut_easyid3 import *
+from main import *
 from argparse import ArgumentParser
 
 TEST_ARGS = \
