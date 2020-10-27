@@ -13,7 +13,7 @@ TEST_ARGS = \
     "-la test_la " \
     "-da 1999"
 
-test = 1
+test = 0
 
 
 def tag_to_arg(s, delimiter=' '):
