@@ -43,4 +43,4 @@ optional arguments:
 | ```no_gui.py song.mp3```                                         | Display tags of song.mp3                                                         |
 | ```no_gui.py song.mp3 -ti "I'm a title"```                       | Set title to "I'm a title"                                                       |
 | ```no_gui.py "C:\Music\Powerwolf - Incense & Iron.mp3" --auto``` | Set artist to "Powerwolf", set title to "Incense & Iron"                         |
-| ```no_gui.py "C:\Music" -da 2018 -la "Ancient Babylonian" ```    | Set date to 2019 and language to "Ancient Babylonian" for each file in C:\Music\ |
+| ```no_gui.py "C:\Music" -da 2018 -la "Ancient Babylonian" ```    | Set date to 2018 and language to "Ancient Babylonian" for each file in C:\Music\ |
