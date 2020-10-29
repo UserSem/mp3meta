@@ -43,11 +43,16 @@ def get_all_paths_to_mp3_in_dir(normal_dir_path):
             cur_file_name.endswith('.mp3')]
 
 
-def dict_is_empty(d):
-    for k in d.keys():
-        if d[k]:
-            return False
-    return True
+def split_filename(s):
+    # "Artist - Title.mp3" --> (Artist, Title)
+    # "Title.mp3" --> (None, Title)
+    if ' - ' in s:
+        s = s.split(' - ')
+        artist = s[0]
+        title = ''.join(s[1:])[:-4]
+        return (artist, title)
+    else:
+        return ("", s[:-4])
 
 
 class Mp3File:
@@ -70,9 +75,10 @@ class Mp3File:
             print(f"Clearing {tag}...")
             self.tags[tag_formatted] = ""
         else:
-            print(f"Setting {tag} to {new_val}...")
+            print(f"Setting {tag} to {new_val}...", end=' ')
             self.tags[tag_formatted] = new_val
-        f.tags.save()
+            print(f"Set.")
+        self.tags.save()
 
     def print_info(self):
         print()
@@ -88,7 +94,4 @@ if __name__ == '__main__':
     TEST_FOLDER = r"C:\Users\users_x2jxvc2\Desktop\test"
     for p in get_all_paths_to_mp3_in_dir(TEST_FOLDER):
         f = Mp3File(p)
-        print(f.get_tags())
-        f.set_tag("album artist", "Qwe")
-        f.set_tag("album", "ALBUM")
-        f.tags.save()
+        print(split_filename(f.file_name))
