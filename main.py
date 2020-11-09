@@ -18,24 +18,6 @@ EMPTY_TAG_OUTPUT = "<UNDEFINED>"  # Output if tag is empty
 EMPTY_TAG_INPUT = "None"  # Pass this value to clear tag
 
 
-def get_abbrev(s):
-    # "title" --> "ti"
-    # "disc number" --> "dn"
-    if len(s.split(' ')) == 1:
-        return s[:2]
-    else:
-        return s.split(' ')[0][0] + s.split(' ')[1][0]
-
-
-def normalize_path(path):
-    return os.path.abspath(path[1:-1]) if path.endswith("'") or path.endswith('"') else \
-        os.path.abspath(path)
-
-
-def file_is_mp3(normal_path):
-    return os.path.isfile(normal_path) and normal_path.endswith('.mp3')
-
-
 def get_all_paths_to_mp3_in_dir(normal_dir_path):
     return [os.path.join(normal_dir_path, cur_file_name) for cur_file_name in os.listdir(normal_dir_path) if
             cur_file_name.endswith('.mp3')]
