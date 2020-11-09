@@ -27,9 +27,6 @@ def get_abbrev(s):
         return s.split(' ')[0][0] + s.split(' ')[1][0]
 
 
-TAG_ABBREVIATIONS = {i.replace(' ', ''): get_abbrev(i) for i in AVAILABLE_TAGS}
-
-
 def normalize_path(path):
     return os.path.abspath(path[1:-1]) if path.endswith("'") or path.endswith('"') else \
         os.path.abspath(path)
@@ -95,4 +92,3 @@ class Mp3File:
                 tag.upper().ljust(15, ' '),
                 tags[tag_formatted] if tags[tag_formatted] else EMPTY_TAG_OUTPUT
             ))
-

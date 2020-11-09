@@ -13,6 +13,11 @@
 * Change tags of every mp3 file in folder;
 * Auto-assign tags to a file based on file name;
 
+## Required modules
+* mutagen
+* argparse
+* pyinstaller (for compiling to .exe)
+
 ## Usage
 ```
 usage: no_gui.py [-h] [-ti [TITLE]] [-ar [ARTIST]] [-al [ALBUM]] [-aa [ALBUM ARTIST]] [-tn [TRACK NUMBER]]
