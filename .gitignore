@@ -4,6 +4,8 @@
 
 *.mp3
 *.exe
+*.xml
+*.iml
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
