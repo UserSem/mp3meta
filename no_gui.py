@@ -1,18 +1,6 @@
 from main import *
 from argparse import ArgumentParser
 
-TEST_ARGS = \
-    "song.mp3 " \
-    "-ti test_ti " \
-    "-ar test_ar " \
-    "-al test_al " \
-    "-aa test_aa " \
-    "-tn test_tn " \
-    "-dn test_dn " \
-    "-ge test_ge " \
-    "-la test_la " \
-    "-da 1999"
-
 test = False
 
 
@@ -58,17 +46,21 @@ if os.path.isfile(path):
 else:
     file_paths = get_all_paths_to_mp3_in_dir(path)
 
+# Display info
 if dict_is_empty(new_tags) and not auto:
     print("No arguments entered, displaying info...")
     for path in file_paths:
         file = Mp3File(path)
         file.print_info()
+
+# Modify file(s)
 else:
     for path in file_paths:
         file = Mp3File(path)
         print(f"Modifying {file.file_name}...")
         if auto:
-            new_tags['artist'], new_tags['title'] = split_filename(file.file_name)
+            file.auto_tag()
+            #new_tags['artist'], new_tags['title'] = split_filename(file.file_name)
         for tag in new_tags.keys():
             if new_tags[tag]:
                 file.set_tag(tag, new_tags[tag])
