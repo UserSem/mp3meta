@@ -1,3 +1,4 @@
+import mutagen
 from mutagen.easyid3 import EasyID3
 import os
 
@@ -39,7 +40,10 @@ class Mp3File:
     def __init__(self, normal_path):
         self.path = normal_path
         self.file_name = normal_path.split('\\')[-1]
-        self.tags = EasyID3(normal_path)
+        try:
+            self.tags = EasyID3(normal_path)
+        except:
+            self.tags = mutagen.File(normal_path, easy=True)
 
     def get_tags(self):
         # Returns dict with all AVAILABLE_TAGS
