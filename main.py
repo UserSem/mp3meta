@@ -1,6 +1,8 @@
 import mutagen
 from mutagen.easyid3 import EasyID3
 import os
+import ntpath
+
 
 TEST_MP3_PATH = r'"song.mp3"'
 AVAILABLE_TAGS = [
@@ -39,7 +41,8 @@ def split_filename(s):
 class Mp3File:
     def __init__(self, normal_path):
         self.path = normal_path
-        self.file_name = normal_path.split('\\')[-1]
+        # self.file_name = normal_path.split('\\')[-1] old
+        self.file_name = ntpath.basename(normal_path)
         try:
             self.tags = EasyID3(normal_path)
         except:
@@ -56,10 +59,10 @@ class Mp3File:
     def set_tag(self, tag, new_val):
         tag_formatted = tag.replace(' ', '')
         if new_val == EMPTY_TAG_INPUT:
-            print(f"Clearing {tag}...")
+            print(f"{self.file_name}: Clearing {tag}...")
             self.tags[tag_formatted] = ""
         else:
-            print(f"Setting {tag} to {new_val}...", end=' ')
+            print(f"{self.file_name}: Setting {tag} to {new_val}...", end=' ')
             self.tags[tag_formatted] = new_val
             print(f"Set.")
         self.tags.save()
