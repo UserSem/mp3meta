@@ -154,5 +154,7 @@ dmypy.json
 .prof
 
 .idea
+tgserver/config.py
+tgserver/data
 
 # End of https://www.toptal.com/developers/gitignore/api/python
