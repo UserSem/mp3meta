@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QLabel, QApplication, QWidget, QPushButton, QLineEdit, QFileDialog, QToolTip
+from PyQt5.QtWidgets import QLabel, QApplication, QWidget, QPushButton, QLineEdit, QFileDialog
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from main import *
@@ -10,7 +10,7 @@ BUTTON_FONT = QFont("Bahnschrift", 24)
 OPEN_FILE_DIR_W = 240
 OPEN_FILE_DIR_H = 80
 
-OR_FONT = QFont("Montserrat", 32)
+OR_FONT = QFont("Bahnschrift", 32)
 OR_H = 80
 OR_W = 80
 
@@ -27,30 +27,36 @@ TAG_ENTRY_X = 20
 TAG_ENTRY_Y = 250
 
 
+def rgb_to_hex(rgb):
+    return '#%02x%02x%02x' % (rgb[0], rgb[1], rgb[2])
+
+
 class Example(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.setFixedSize(600, 900)
-        # self.setWindowFlags(Qt.FramelessWindowHint)
+        self.background = None
+        self.open_dir_btn = None
+        self.open_file_btn = None
+        self.or_label = None
+        self.load_button = None
+        self.tag_entries = None
+        self.auto_btn = None
+        self.set_button = None
 
-        self.btn = None
-        self.qbtn = None
-        self.path_textbox = None
+        self.path = None
+        self.new_tag_list = None
         self.paths = None
         self.file = None
         self.dir = None
-        self.log = ""
+
         self.init_ui()
 
     def init_ui(self):
-
-        QToolTip.setFont(QFont('Consolas', 10))  # setting font and font size
-
-        # BACKGROUND IMAGE
+        # BACKGROUND
         self.background = QLabel(self)
-        self.bg = QPixmap('back.png')
-        self.background.setPixmap(self.bg)
+        self.background.resize(600, 900)
+        self.background.setStyleSheet(f"background-color: {rgb_to_hex((50, 27, 84))};")
 
         # OPEN DIRECTORY BUTTON
         self.open_dir_btn = QPushButton("Open directory", self)
@@ -74,16 +80,16 @@ class Example(QWidget):
         self.or_label.resize(OR_H, OR_W)
         self.or_label.move(260, 50)
 
-        # LOAD DIR/FILE BUTTON
-        self.load_btn = QPushButton("Load", self)
-        self.load_btn.setFont(BUTTON_FONT)
-        self.load_btn.clicked.connect(self.load_path_list)
-        self.load_btn.resize(LOAD_BTN_W, LOAD_BTN_H)
-        self.load_btn.move(240, 50 + OPEN_FILE_DIR_H + 20)
-        self.load_btn.setEnabled(False)
+        # LOAD BUTTON
+        self.load_button = QPushButton("Load", self)
+        self.load_button.setFont(BUTTON_FONT)
+        self.load_button.clicked.connect(self.load_path_list)
+        self.load_button.resize(LOAD_BTN_W, LOAD_BTN_H)
+        self.load_button.move(240, 50 + OPEN_FILE_DIR_H + 20)
+        self.load_button.setEnabled(False)
 
         # TAG ENTRIES
-        self.tag_entries = [QLineEdit(self) for tag in AVAILABLE_TAGS]
+        self.tag_entries = [QLineEdit(self) for _ in AVAILABLE_TAGS]
         for i, tag in enumerate(self.tag_entries):
             self.tag_entries[i].setFont(TAG_ENTRY_FONT)
             self.tag_entries[i].setPlaceholderText(AVAILABLE_TAGS[i])
@@ -96,7 +102,7 @@ class Example(QWidget):
         self.auto_btn.setFont(BUTTON_FONT)
         self.auto_btn.clicked.connect(self.auto_tag)
         self.auto_btn.resize(OPEN_FILE_DIR_W, OPEN_FILE_DIR_H)
-        self.auto_btn.move(340, TAG_ENTRY_Y + 9 * (TAG_ENTRY_SPACING + TAG_ENTRY_H))
+        self.auto_btn.move(340, TAG_ENTRY_Y + 6 * (TAG_ENTRY_SPACING + TAG_ENTRY_H))
         self.auto_btn.setEnabled(False)
 
         # SET CHOSEN TAGS BUTTON
@@ -104,11 +110,12 @@ class Example(QWidget):
         self.set_button.setFont(BUTTON_FONT)
         self.set_button.clicked.connect(self.set_new_tags)
         self.set_button.resize(OPEN_FILE_DIR_W, OPEN_FILE_DIR_H)
-        self.set_button.move(20, TAG_ENTRY_Y + 9 * (TAG_ENTRY_SPACING + TAG_ENTRY_H))
+        self.set_button.move(340, TAG_ENTRY_Y)
         self.set_button.setEnabled(False)
 
         # WINDOW
-        self.setGeometry(300, 100, 600, 900)  # x, y, w, h
+        self.setFixedSize(600, 650)
+        self.setGeometry(300, 100, 600, 650)  # x, y, w, h
         self.setWindowTitle('mp3meta')
         self.setWindowIcon(QIcon('icon0.ico'))
         self.show()
@@ -126,7 +133,6 @@ class Example(QWidget):
             for i, tag in enumerate(self.new_tag_list):
                 if tag:
                     f.set_tag(AVAILABLE_TAGS[i], tag)
-
 
     def auto_tag(self):
         if self.paths:
@@ -149,11 +155,11 @@ class Example(QWidget):
 
     def get_dir_path(self):
         self.dir = QFileDialog.getExistingDirectory(self, "Choose Directory")
-        self.load_btn.setEnabled(True)
+        self.load_button.setEnabled(True)
 
     def get_file_path(self):
         self.file = QFileDialog.getOpenFileNames(self, "Open file", "*.mp3")[0]
-        self.load_btn.setEnabled(True)
+        self.load_button.setEnabled(True)
 
     def load_path_list(self):
         if self.file or self.dir:
@@ -165,7 +171,8 @@ class Example(QWidget):
             self.file = None
             for i, tag in enumerate(self.tag_entries):
                 self.tag_entries[i].setEnabled(True)
-            print(self.paths)
+            for p in self.paths:
+                print(p)
             self.auto_btn.setEnabled(True)
             self.set_button.setEnabled(True)
         else:
