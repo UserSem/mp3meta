@@ -1,8 +1,14 @@
+import os.path
+
 from telegram.update import Update
 from telegram.ext import Updater, MessageHandler, Filters, CallbackContext
 
 import config
 import db
+
+import sys
+sys.path.append(os.path.abspath('../..'))
+from mp3meta import main
 
 updater = Updater(token=config.TOKEN, use_context=True)
 dispatcher = updater.dispatcher
@@ -55,9 +61,19 @@ def process(update: Update, context: CallbackContext):
             context.bot.send_message(chat_id=update.effective_chat.id,
                                      text=f"Got an audio!\n"
                                           f"Name: {update.message.audio.file_name}\n")
-            if update.message.audio.file_name.endswith(".mp3"):
+            if not update.message.audio.file_name.endswith(".mp3"):
                 context.bot.send_message(chat_id=update.effective_chat.id,
-                                         text="Not an mp3 file!")
+                                         text=f"Not an mp3 file! {update.message.audio.file_name}")
+                return
+
+            file_to_download = update.message.audio.get_file()
+            file_path = os.path.join(config.MUSIC_FOLDER, update.message.audio.file_name)
+            file_to_download.download(file_path)
+            mp3_file = main.Mp3File(file_path)
+            tags = mp3_file.get_tags()
+            tag_out = '\n'.join(f"{tag}: {' - ' if not val else val}" for tag, val in tags.items())
+            context.bot.send_message(chat_id=update.effective_chat.id,
+                                     text=f"Got tags: \n{tag_out}")
         else:
             context.bot.send_message(chat_id=update.effective_chat.id, text="Unknown message!")
     except Exception as exc:
