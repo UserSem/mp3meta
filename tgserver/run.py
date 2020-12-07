@@ -26,15 +26,25 @@ def addme(group: str, update: Update, context: CallbackContext):
 
 def process(update: Update, context: CallbackContext):
     try:
-        command = update.message.text.split()
+        command = ['']
+        if update.message.text:
+            command = update.message.text.split()
         if command[0].lower() == 'addme':
             if len(command) == 2:
                 addme(command[1], update, context)
             else:
-                context.bot.send_message(chat_id=update.effective_chat.id, text="Command: addme <group>")
+                context.bot.send_message(chat_id=update.effective_chat.id,
+                                         text="Command: addme <group>")
         elif command[0].lower() == 'myid':
             context.bot.send_message(chat_id=update.effective_chat.id,
                                      text=f"Your ID is {str(update.effective_chat.id)}")
+        elif update.message.audio:
+            context.bot.send_message(chat_id=update.effective_chat.id,
+                                     text=f"Got an audio!\n"
+                                          f"Name: {update.message.audio.file_name}\n")
+            if update.message.audio.file_name.endswith(".mp3"):
+                context.bot.send_message(chat_id=update.effective_chat.id,
+                                         text="Not an mp3 file!")
         else:
             context.bot.send_message(chat_id=update.effective_chat.id, text="Unknown message!")
     except Exception as exc:
