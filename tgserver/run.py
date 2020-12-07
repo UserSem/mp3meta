@@ -1,6 +1,5 @@
 from telegram.update import Update
 from telegram.ext import Updater, MessageHandler, Filters, CallbackContext
-from pprint import pprint
 
 import config
 import db
@@ -28,11 +27,14 @@ def addme(group: str, update: Update, context: CallbackContext):
 def process(update: Update, context: CallbackContext):
     try:
         command = update.message.text.split()
-        if command[0] == 'addme':
+        if command[0].lower() == 'addme':
             if len(command) == 2:
                 addme(command[1], update, context)
             else:
                 context.bot.send_message(chat_id=update.effective_chat.id, text="Command: addme <group>")
+        elif command[0].lower() == 'myid':
+            context.bot.send_message(chat_id=update.effective_chat.id,
+                                     text=f"Your ID is {str(update.effective_chat.id)}")
         else:
             context.bot.send_message(chat_id=update.effective_chat.id, text="Unknown message!")
     except Exception as exc:

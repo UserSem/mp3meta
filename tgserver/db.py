@@ -7,6 +7,7 @@ import config
 
 conn = sqlite3.connect(config.DB_PATH, check_same_thread=False)
 
+
 def init_db():
     cursor = conn.cursor()
     cursor.executescript(
