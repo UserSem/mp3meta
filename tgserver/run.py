@@ -38,6 +38,19 @@ def process(update: Update, context: CallbackContext):
         elif command[0].lower() == 'myid':
             context.bot.send_message(chat_id=update.effective_chat.id,
                                      text=f"Your ID is {str(update.effective_chat.id)}")
+        elif command[0].lower() == 'adduser':
+            user_id, group_name = command[1], command[2]
+            sender_id = update.effective_user.id
+            err = db.add_user_to_group(user_id, group_name, sender_id)
+            if err:
+                context.bot.send_message(chat_id=update.effective_chat.id,
+                                         text=err)
+            else:
+                context.bot.send_message(chat_id=update.effective_chat.id,
+                                         text=f"User {user_id} added to group {group_name}")
+                context.bot.send_message(chat_id=user_id,
+                                         text=f"You were added to group {group_name}")
+
         elif update.message.audio:
             context.bot.send_message(chat_id=update.effective_chat.id,
                                      text=f"Got an audio!\n"

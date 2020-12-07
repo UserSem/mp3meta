@@ -65,4 +65,48 @@ def add_request(group: str, user_id: str):
     return [d[0] for d in data]
 
 
+def user_is_admin(user_id: str, group_name: str='') -> bool:
+    # Checking for superadmin
+    data = conn.execute("SELECT is_staff FROM users WHERE id = ?", (user_id, )).fetchall()
+    if data and data[0][0]:
+        return True
+    if not group_name:
+        return False
+
+    # Checking for group admin
+    data = conn.execute("SELECT is_admin FROM membership WHERE group_name = ? AND user_id = ?",
+                        (group_name, user_id)).fetchall()
+    if data and data[0][0]:
+        return True
+    return False
+
+
+def user_in_group(user_id: str, group_name: str) -> bool:
+    data = conn.execute("SELECT user_id FROM membership WHERE user_id = ? AND group_name = ?",
+                        (user_id, group_name)).fetchall()
+    return bool(data)
+
+
+def request_exists(user_id: str, group_name: str) -> bool:
+    data = conn.execute("SELECT user_id FROM requests WHERE user_id = ? AND group_name = ?",
+                        (user_id, group_name)).fetchall()
+    return bool(data)
+
+
+def add_user_to_group(user_id: str, group_name: str, sender_id: str):
+    if not user_is_admin(sender_id, group_name):
+        return 'No rights'
+    if user_in_group(user_id, group_name):
+        return "Already in group"
+    if not request_exists(user_id, group_name):
+        return "No request"
+    conn.execute("DELETE FROM requests WHERE user_id = ? AND group_name = ?",
+                 (user_id, group_name))
+    conn.execute("INSERT INTO membership VALUES (?, ?, ?)",
+                 (group_name, user_id, False))
+    conn.commit()
+
+
+
+
 init_db()
