@@ -32,6 +32,10 @@ def addme(group: str, update: Update, context: CallbackContext):
 
 def process(update: Update, context: CallbackContext):
     try:
+        user_id = str(update.effective_user.id)
+        chat_id = str(update.effective_chat.id)
+        def reply_to_chat(text: str):
+            context.bot.send_message(chat_id, text)
         command = ['']
         if update.message.text:
             command = update.message.text.split()
@@ -39,41 +43,57 @@ def process(update: Update, context: CallbackContext):
             if len(command) == 2:
                 addme(command[1], update, context)
             else:
-                context.bot.send_message(chat_id=update.effective_chat.id,
-                                         text="Command: addme <group>")
+                reply_to_chat("Command: addme <group>")
         elif command[0].lower() == 'myid':
-            context.bot.send_message(chat_id=update.effective_chat.id,
-                                     text=f"Your ID is {str(update.effective_chat.id)}")
+            reply_to_chat(f"Your ID is {user_id}")
         elif command[0].lower() == 'adduser':
             user_id, group_name = command[1], command[2]
             sender_id = update.effective_user.id
             err = db.add_user_to_group(user_id, group_name, sender_id)
             if err:
-                context.bot.send_message(chat_id=update.effective_chat.id,
-                                         text=err)
+                reply_to_chat(err)
             else:
-                context.bot.send_message(chat_id=update.effective_chat.id,
-                                         text=f"User {user_id} added to group {group_name}")
+                reply_to_chat(f"User {user_id} added to group {group_name}")
                 context.bot.send_message(chat_id=user_id,
                                          text=f"You were added to group {group_name}")
+        elif command[0].lower() == 'find':
+            if len(command) < 3:
+                reply_to_chat("Command: find <group> <name/tag>")
+                return
+            files = db.search_files(command[2:], command[1])
+            reply_to_chat(f"Results: {files}")
+
+
 
         elif update.message.audio:
-            context.bot.send_message(chat_id=update.effective_chat.id,
-                                     text=f"Got an audio!\n"
-                                          f"Name: {update.message.audio.file_name}\n")
+            reply_to_chat(f"Got an audio!\n "
+                          f"Name: {update.message.audio.file_name}")
             if not update.message.audio.file_name.endswith(".mp3"):
-                context.bot.send_message(chat_id=update.effective_chat.id,
-                                         text=f"Not an mp3 file! {update.message.audio.file_name}")
+                reply_to_chat(f"Not an mp3 file! {update.message.audio.file_name}")
                 return
-
+            group_name = update.message.text
+            if not group_name:
+                group_name = db.get_user_groups(update.effective_user.id)
+                if len(group_name) != 1:
+                    reply_to_chat("Specify your group!")
+                    return
+                group_name = group_name[0]
+            else:
+                if group_name not in db.get_user_groups(update.effective_user.id):
+                    reply_to_chat("Invalid group!")
+                    return
             file_to_download = update.message.audio.get_file()
-            file_path = os.path.join(config.MUSIC_FOLDER, update.message.audio.file_name)
+            file_name = update.message.audio.file_name
+            file_path = os.path.join(config.MUSIC_FOLDER, file_name)
             file_to_download.download(file_path)
             mp3_file = main.Mp3File(file_path)
             tags = mp3_file.get_tags()
             tag_out = '\n'.join(f"{tag}: {' - ' if not val else val}" for tag, val in tags.items())
-            context.bot.send_message(chat_id=update.effective_chat.id,
-                                     text=f"Got tags: \n{tag_out}")
+            reply_to_chat(f"Got tags: \n{tag_out}")
+            db.add_file_to_db(file_name, group_name)
+            db.set_current_file(user_id, file_name)
+            db.write_tags_to_db(file_name, tags)
+
         else:
             context.bot.send_message(chat_id=update.effective_chat.id, text="Unknown message!")
     except Exception as exc:
