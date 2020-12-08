@@ -1,4 +1,5 @@
 import sqlite3
+import os.path
 
 from telegram.user import User
 
@@ -152,5 +153,10 @@ def search_files(terms: list, group_name: str) -> list:
                     result.add(file_name[0])
     return sorted(list(result))
 
+
+def get_cur_file_path(user_id: str) -> str:
+    data = conn.execute("SELECT current_file_name FROM users WHERE user_id = ?",
+                 (user_id, )).fetchall()
+    return os.path.join(config.MUSIC_FOLDER, str(data[0][0]))
 
 init_db()

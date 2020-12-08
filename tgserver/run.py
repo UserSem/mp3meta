@@ -7,6 +7,7 @@ import config
 import db
 
 import sys
+
 sys.path.append(os.path.abspath('../..'))
 from mp3meta import main
 
@@ -34,18 +35,26 @@ def process(update: Update, context: CallbackContext):
     try:
         user_id = str(update.effective_user.id)
         chat_id = str(update.effective_chat.id)
+
         def reply_to_chat(text: str):
             context.bot.send_message(chat_id, text)
+
         command = ['']
         if update.message.text:
             command = update.message.text.split()
+
+        # Send a request to add user
         if command[0].lower() == 'addme':
             if len(command) == 2:
                 addme(command[1], update, context)
             else:
                 reply_to_chat("Command: addme <group>")
+
+        # Get user ID
         elif command[0].lower() == 'myid':
             reply_to_chat(f"Your ID is {user_id}")
+
+        # Add user to group
         elif command[0].lower() == 'adduser':
             user_id, group_name = command[1], command[2]
             sender_id = update.effective_user.id
@@ -56,15 +65,33 @@ def process(update: Update, context: CallbackContext):
                 reply_to_chat(f"User {user_id} added to group {group_name}")
                 context.bot.send_message(chat_id=user_id,
                                          text=f"You were added to group {group_name}")
+
+        # Find file in group
         elif command[0].lower() == 'find':
             if len(command) < 3:
                 reply_to_chat("Command: find <group> <name/tag>")
                 return
             files = db.search_files(command[2:], command[1])
-            reply_to_chat(f"Results: {files}")
+            files_output = '\n'.join([f"{str(i)}. {file_name}"
+                                      for i, file_name in enumerate(files)])
+            reply_to_chat(f"Results: \n{files_output}")
 
+        # Get current file name
+        elif command[0].lower() == "cur":
+            reply_to_chat(os.path.basename(db.get_cur_file_path(user_id)))
 
+        # Change tag in current file
+        elif command[0].lower() in config.TAG_ABBREVS:
+            if len(command) < 2:
+                reply_to_chat("Command <ti|ar|...> <new_tag>")
+                return
+            cur_file_path = db.get_cur_file_path(user_id)
+            mp3_file = main.Mp3File(cur_file_path)
+            mp3_file.set_tag(config.TAG_ABBREVS[command[0].lower()], command[1:])
+            reply_to_chat(f"{command[0].lower()} changed to {command[1:]}")
+            db.write_tags_to_db()
 
+        # Get and download mp3
         elif update.message.audio:
             reply_to_chat(f"Got an audio!\n "
                           f"Name: {update.message.audio.file_name}")

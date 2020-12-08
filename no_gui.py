@@ -5,6 +5,7 @@ from argparse import ArgumentParser
 test = False
 TEST_ARGS = "song.mp3 -ti TEST_TITLE -ar TEST_ARTIST"
 
+
 def tag_to_arg(s, delimiter=' '):
     # "title" --> "-ti"
     # "disc number" --> "-dn"
