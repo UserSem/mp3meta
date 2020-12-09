@@ -36,9 +36,10 @@ def process(update: Update, context: CallbackContext):
     try:
         user_id = str(update.effective_user.id)
         chat_id = str(update.effective_chat.id)
+        message_id = str(update.message.message_id)
 
         def reply_to_chat(text: str):
-            context.bot.send_message(chat_id, text)
+            context.bot.send_message(chat_id=chat_id, text=text, reply_to_message_id=message_id)
 
         command = ['']
         if update.message.text:
@@ -73,9 +74,19 @@ def process(update: Update, context: CallbackContext):
                 reply_to_chat("Command: find <group> <name/tag>")
                 return
             files = db.search_files(command[2:], command[1])
-            files_output = '\n'.join([f"{str(i)}. {file_name}"
+            db.write_last_find(user_id, files)
+            files_output = '\n'.join([f"{str(i + 1)}. {file_name}"
                                       for i, file_name in enumerate(files)])
             reply_to_chat(f"Results: \n{files_output}")
+
+        # Select current file
+        elif command[0].isdigit():
+            file_name, err = db.select_current(user_id, int(command[0]))
+            if err:
+                reply_to_chat(err)
+                return
+            reply_to_chat(f"Selected {file_name}")
+
 
         # Get current file
         elif command[0].lower() == "cur":
@@ -135,7 +146,8 @@ def process(update: Update, context: CallbackContext):
             db.write_tags_to_db(file_name, tags)
 
         else:
-            context.bot.send_message(chat_id=update.effective_chat.id, text="Unknown message!")
+            if update.effective_chat.id == user_id:
+                reply_to_chat("Unknown message!")
     except Exception as exc:
         context.bot.send_message(chat_id=update.effective_chat.id, text=f"Unknown error ({exc})")
 

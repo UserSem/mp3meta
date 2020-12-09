@@ -16,7 +16,8 @@ def init_db():
         "  user_id TEXT PRIMARY KEY,"
         "  name TEXT NOT NULL,"
         "  is_staff BOOLEAN DEFAULT false,"
-        "  current_file_name TEXT"        
+        "  current_file_name TEXT,"
+        "  last_find_results TEXT"        
         ");"
         "CREATE TABLE IF NOT EXISTS membership ("
         "  group_name TEXT NOT NULL,"
@@ -152,6 +153,28 @@ def search_files(terms: list, group_name: str) -> list:
                 for file_name in data:
                     result.add(file_name[0])
     return sorted(list(result))
+
+
+def write_last_find(user_id: str, results: list):
+    conn.execute("UPDATE users SET last_find_results = ? WHERE user_id = ?",
+                 (config.DELIMITER.join(results), user_id))
+    conn.commit()
+
+
+def select_current(user_id: str, choice: int):
+    data = conn.execute("SELECT last_find_results FROM users WHERE user_id = ?",
+                        (user_id, )).fetchall()
+    if len(data) != 1:
+        return None, f'{len(data)} users found.'
+    results = data[0][0].split(config.DELIMITER)
+    if not (0 < choice <= len(results)):
+        return None, 'Bad choice'
+    conn.execute('UPDATE users SET current_file_name = ? WHERE user_id = ?',
+                 (results[choice - 1], user_id))
+    return results[choice - 1], None
+
+
+
 
 
 def get_cur_file_path(user_id: str) -> str:
