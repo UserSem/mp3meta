@@ -87,7 +87,6 @@ def process(update: Update, context: CallbackContext):
                 return
             reply_to_chat(f"Selected {file_name}")
 
-
         # Get current file
         elif command[0].lower() == "cur":
             cur_file_path = db.get_cur_file_path(user_id)
@@ -114,6 +113,17 @@ def process(update: Update, context: CallbackContext):
             new_tags = mp3_file.get_tags()
             db.write_tags_to_db(cur_file_name, new_tags)
 
+        # Get help
+        elif command[0].lower() == 'h' or command[0].lower() == 'help':
+            reply_to_chat("HELP\n"
+                          "myid - get your Telegram ID\n"
+                          "addme <group> - request to add user to <group>\n"
+                          "cur - get your current file\n"
+                          "Send an mp3 file to add it to collection\n"
+                          "find <group> [terms] - search for files by name/tags\n"
+                          "Select file from search results by sending its number\n"
+                          f"{'|'.join(config.TAG_ABBREVS.keys())} <new_value> - set new value of tag")
+
         # Get and download mp3
         elif update.message.audio:
             reply_to_chat(f"Got an audio!\n "
@@ -121,7 +131,7 @@ def process(update: Update, context: CallbackContext):
             if not update.message.audio.file_name.endswith(".mp3"):
                 reply_to_chat(f"Not an mp3 file! {update.message.audio.file_name}")
                 return
-            group_name = update.message.text
+            group_name = update.message.caption
             if not group_name:
                 group_name = db.get_user_groups(update.effective_user.id)
                 if len(group_name) != 1:

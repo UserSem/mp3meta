@@ -55,7 +55,7 @@ def add_user(user: User):
     name = [txt for txt in (user.first_name, user.username, user.last_name) if txt is not None]
     if not name:
         return "Bad name"
-    conn.execute("INSERT INTO users VALUES (?, ?, ?)", (user.id, ' '.join(name), False))
+    conn.execute("INSERT INTO users (user_id, name, is_staff) VALUES (?, ?, ?)", (user.id, ' '.join(name), False))
     conn.commit()
 
 
