@@ -1,4 +1,5 @@
 import os.path
+import os
 
 from telegram.update import Update
 from telegram.ext import Updater, MessageHandler, Filters, CallbackContext
@@ -97,8 +98,8 @@ def process(update: Update, context: CallbackContext):
             cur_file_path = db.get_cur_file_path(user_id)
             cur_file_name = os.path.basename(cur_file_path)
             mp3_file = main.Mp3File(cur_file_path)
-            mp3_file.set_tag(config.TAG_ABBREVS[tag_abbrev], tag_value)
-            reply_to_chat(f"{config.TAG_ABBREVS[tag_abbrev]} changed to {tag_value}")
+            mp3_file.set_tag(tag_name, tag_value)
+            reply_to_chat(f"{tag_name} changed to {tag_value}")
             new_tags = mp3_file.get_tags()
             db.write_tags_to_db(cur_file_name, new_tags)
 
