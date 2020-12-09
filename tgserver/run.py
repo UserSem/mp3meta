@@ -76,20 +76,31 @@ def process(update: Update, context: CallbackContext):
                                       for i, file_name in enumerate(files)])
             reply_to_chat(f"Results: \n{files_output}")
 
-        # Get current file name
+        # Get current file
         elif command[0].lower() == "cur":
-            reply_to_chat(os.path.basename(db.get_cur_file_path(user_id)))
+            cur_file_path = db.get_cur_file_path(user_id)
+            mp3_file = main.Mp3File(cur_file_path)
+            tags = mp3_file.get_tags()
+            tags_output = '\n'.join(f"{tag}: {tags[tag.replace(' ', '')]}" for tag in main.AVAILABLE_TAGS)
+            reply_to_chat(f"{tags_output}")
+            reply_to_chat("Sending file...")
+            context.bot.send_audio(update.effective_chat.id, open(cur_file_path, 'rb'))
 
         # Change tag in current file
-        elif command[0].lower() in config.TAG_ABBREVS:
+        elif command[0].lower() in config.TAG_ABBREVS.keys():
             if len(command) < 2:
                 reply_to_chat("Command <ti|ar|...> <new_tag>")
                 return
+            tag_abbrev = command[0].lower()
+            tag_name = config.TAG_ABBREVS[tag_abbrev]
+            tag_value = ' '.join(command[1:])
             cur_file_path = db.get_cur_file_path(user_id)
+            cur_file_name = os.path.basename(cur_file_path)
             mp3_file = main.Mp3File(cur_file_path)
-            mp3_file.set_tag(config.TAG_ABBREVS[command[0].lower()], command[1:])
-            reply_to_chat(f"{command[0].lower()} changed to {command[1:]}")
-            db.write_tags_to_db()
+            mp3_file.set_tag(config.TAG_ABBREVS[tag_abbrev], tag_value)
+            reply_to_chat(f"{config.TAG_ABBREVS[tag_abbrev]} changed to {tag_value}")
+            new_tags = mp3_file.get_tags()
+            db.write_tags_to_db(cur_file_name, new_tags)
 
         # Get and download mp3
         elif update.message.audio:
@@ -113,6 +124,7 @@ def process(update: Update, context: CallbackContext):
             file_name = update.message.audio.file_name
             file_path = os.path.join(config.MUSIC_FOLDER, file_name)
             file_to_download.download(file_path)
+            reply_to_chat("Getting tags...")
             mp3_file = main.Mp3File(file_path)
             tags = mp3_file.get_tags()
             tag_out = '\n'.join(f"{tag}: {' - ' if not val else val}" for tag, val in tags.items())
