@@ -175,6 +175,13 @@ class Example(QWidget):
                 print(p)
             self.auto_btn.setEnabled(True)
             self.set_button.setEnabled(True)
+
+            first_file = Mp3File(self.paths[0])
+            print(first_file.get_tags().values())
+            for i, tag in enumerate(self.tag_entries):
+                self.tag_entries[i].setText(list(first_file.get_tags().values())[i])
+
+
         else:
             print('No path is selected!')
 
